@@ -1,0 +1,181 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using MySql.Data.MySqlClient;
+
+
+namespace Invento.Invento_Usercontrols
+{
+    public partial class ItemList : UserControl
+    {
+        public ItemList()
+        {
+            InitializeComponent();
+            loadData();
+        }
+        public string itemNm;
+        public string Description;
+        public string NumberOfItems;
+        public string Price;
+
+        MySqlConnection DBConnect = new MySqlConnection("datasource =localhost; username = root; password =; database = invento");
+        int a = 1;
+       
+        public void loadData()
+        {
+            string insertQuery = "Select * from stock Order by itemName ";
+            DBConnect.Open();
+         
+            MySqlDataAdapter sda = new MySqlDataAdapter(insertQuery, DBConnect);
+            DataTable dt = new DataTable();
+            
+            sda.Fill(dt);
+            //dt.Reset();
+            int cunt = dt.Rows.Count;
+           // MessageBox.Show(cunt.ToString());
+             //panel1.Controls.Remove();
+            
+            
+            for (int i = 0; i < cunt; i++)
+            {
+                itemNm = dt.Rows[i][1].ToString();
+                Description = dt.Rows[i][2].ToString();
+                NumberOfItems = dt.Rows[i][3].ToString();
+                Price = dt.Rows[i][4].ToString();
+
+                GroupboxCreate();
+            }
+           
+            DBConnect.Close();
+        }
+        private void ItemList_Load(object sender, EventArgs e)
+        {
+            //loadData();
+        }
+        GroupBox grpBox = new GroupBox();
+        public void GroupboxCreate()
+        {
+            
+           // int cont= panel1.Controls.Count;
+            //panel1.Controls.Clear();
+            //Dynamic groupBox
+            GroupBox grpBox = new GroupBox();
+            grpBox.Location = new Point(3, 11);
+            grpBox.Size = new Size(260, 100);
+            grpBox.Top = a * 10;
+            grpBox.Left = 10;
+            grpBox.Text = "";
+            grpBox.Font = new Font("Segoe UI", 15);
+            grpBox.FlatStyle = FlatStyle.Standard;
+            
+            //Dynamic Price label
+            Label labprice = new Label();
+            labprice.Name = "price";
+            labprice.Location = new Point(200, 51);
+            labprice.AutoSize = true;
+            labprice.Font = new Font("Segoe UI", 10);
+            labprice.Text = Price;
+            labprice.ForeColor = Color.ForestGreen;
+
+            grpBox.Controls.Add(labprice);
+            a = a + 10;
+
+            //Dynamic item name
+            Label labname = new Label();
+            labname.Name = "name";
+            labname.Location = new Point(7, 24);
+            labname.AutoSize = true;
+            labname.Font = new Font("Segoe UI", 14);
+            labname.Text = itemNm;
+            labname.ForeColor = Color.ForestGreen;
+            grpBox.Controls.Add(labname);
+
+            //Dynamic item Description
+            Label Desc = new Label();
+            Desc.Name = "labDescr";         
+            Desc.Location = new Point(7, 51);
+            Desc.AutoSize = true;
+            Desc.Font = new Font("Segoe UI", 10);
+            Desc.Text = Description;
+            grpBox.Controls.Add(Desc);
+
+
+            //Dynamic item number
+            Label Noo = new Label();
+            Noo.Name = "labNoOfItem";
+            Noo.Location = new Point(7, 75);
+            Noo.AutoSize = true;
+            Noo.Font = new Font("Segoe UI", 10);
+            Noo.Text = NumberOfItems;
+            grpBox.Controls.Add(Noo);
+
+            panel1.Controls.Add(grpBox);
+           
+           // MessageBox.Show(cont.ToString());
+        }
+
+        private  void fillDataGridViw()
+        {
+            if (DBConnect.State == ConnectionState.Closed)
+            {
+                DBConnect.Open();
+                MySqlDataAdapter Sda = new MySqlDataAdapter("Select id, itemDescription, itemName, itemPrice,noOfItem  from stock where itemName like '%" + SearchTxt.text + "%' order by id", DBConnect);
+                DataTable dt = new DataTable();
+                Sda.Fill(dt);
+               // panel1.Controls.Clear();
+               
+                foreach (DataRow stock in dt.Rows)
+                {
+                    GroupboxCreate();
+                    int cunt = dt.Rows.Count;
+                   // MessageBox.Show(cunt.ToString());
+                    
+                    for (int i = 0; i < cunt; i++)
+                    {
+                        itemNm = dt.Rows[i][1].ToString();
+                        Description = dt.Rows[i][2].ToString();
+                        NumberOfItems = dt.Rows[i][3].ToString();
+                        Price = dt.Rows[i][4].ToString();
+                    }
+                }
+                DBConnect.Close();
+            }
+        }
+       
+
+        private void SearchTxt_OnTextChange(object sender, EventArgs e)
+        {
+            for (int controlcount = this.Controls.Count - 1; controlcount >= 0; controlcount--)
+            {
+                //if (this.Controls[controlcount] is GroupBox)
+                //{
+                //    //this.Controls.Clear();
+
+                //    //this.Controls[controlcount].Dispose();
+
+                //}
+                GroupBox control = this.Controls[controlcount] as GroupBox;
+                {
+                    if (control == null)
+                           continue;
+                    control.Dispose();
+                    
+                }
+            }
+               // fillDataGridViw();
+        }
+
+        //private void button1_Click(object sender, EventArgs e)
+        //{
+        //   loadData();
+        //}
+
+
+   }
+}
